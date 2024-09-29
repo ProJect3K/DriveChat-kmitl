@@ -28,12 +28,16 @@ manager = ConnectionManager()
 
 @app.get("/")
 async def get():
-    return FileResponse("templates/index.html")
+    return FileResponse("templates/chat.html")
 
 
 @app.websocket("/ws/{client_id}")
 async def websocket_endpoint(websocket: WebSocket, client_id: int):
     await manager.connect(websocket)
+
+    await manager.send_personal_message("You have joined the chat room.", websocket)
+    await manager.broadcast(f"Client #{client_id} joined the chat room.", websocket)
+
     try: 
         while True:
             data = await websocket.receive_text()
