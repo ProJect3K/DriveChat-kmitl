@@ -1,7 +1,7 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
 
-app = FastAPI()
+app = FastAPI()#fastapi=app เพื่อเรียกใช้งานง่ายขึ้น
 
 class ConnectionManager:
     def __init__(self):
@@ -38,7 +38,7 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
     await manager.send_personal_message("You have joined the chat room.", websocket)
     await manager.broadcast(f"Client #{client_id} joined the chat room.", websocket)
 
-    try: 
+    try:
         while True:
             data = await websocket.receive_text()
             await manager.send_personal_message(f"You wrote: {data}", websocket)
