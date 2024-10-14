@@ -46,7 +46,7 @@
   - Install package
 
     ``` bash
-    pip install -r requirements.txt && cd demo-drch && npm install
+    pip install -r requirements.txt && cd drch && npm install
     ```
 
 ## SELECT INTERPRETER
@@ -63,10 +63,10 @@
 
 ## RUN
 
-  - เข้า folder demo-drch
+  - เข้า folder drch
 
   ``` bash
-  cd demo-drch
+  cd drch
   ```
 
   - run server & website
