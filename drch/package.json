@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "dev:both": "concurrently \"cd .. && uvicorn main:app --reload\" \"npm run dev\"",
+    "dev:uvicorn" : "concurrently \"cd .. && uvicorn main:app --reload\"",
+    "dev:both": "concurrently \"cd .. && uvicorn main:app --reload\" \"next dev\"",
+    "dev:multi": "concurrently \"npm run dev:uvicorn\" \"next dev -p 3000\" \"next dev -p 3001\" \"next dev -p 3002\" \"next dev -p 3003\" \"next dev -p 3004\" \"next dev -p 3005\"",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
