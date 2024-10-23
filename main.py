@@ -82,7 +82,7 @@ async def websocket_endpoint(websocket: WebSocket, room: str, username: str):
     await manager.connect(websocket, room, username)
     
     await manager.broadcast(f"{username} joined the chat room.", room, exclude=websocket)
-    await manager.send_personal_message("You have joined the chat room.", websocket)
+    await manager.send_personal_message(f"คุณเข้าร่วมบทสนทนา {room}", websocket)
     await manager.broadcast_user_list(room)
     
     try:
