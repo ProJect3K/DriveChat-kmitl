@@ -6,10 +6,51 @@ export default function Home() {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
   const [username, setUsername] = useState("");
-  const [room, setRoom] = useState("room1"); // Default to room1
+  const [room, setRoom] = useState(""); 
+  const [customRoom, setCustomRoom] = useState("");
   const [isJoined, setIsJoined] = useState(false);
   const [activeUsers, setActiveUsers] = useState([]);
+  const [availableRooms, setAvailableRooms] = useState([]);
+  const [isCreatingRoom, setIsCreatingRoom] = useState(false);
   const socket = useRef(null);
+
+  useEffect(() => {
+    // Fetch available rooms when component mounts
+    fetchAvailableRooms();
+  }, []);
+
+  const fetchAvailableRooms = async () => {
+    try {
+      const response = await fetch('http://127.0.0.1:8000/rooms');
+      const rooms = await response.json();
+      setAvailableRooms(rooms);
+    } catch (error) {
+      console.error('Error fetching rooms:', error);
+    }
+  };
+
+  const createRoom = async () => {
+    if (customRoom.trim()) {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/rooms', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ room_name: customRoom }),
+        });
+        
+        if (response.ok) {
+          setRoom(customRoom);
+          setAvailableRooms([...availableRooms, customRoom]);
+          setIsCreatingRoom(false);
+          setCustomRoom("");
+        }
+      } catch (error) {
+        console.error('Error creating room:', error);
+      }
+    }
+  };
 
   const joinChat = () => {
     if (username && room) {
