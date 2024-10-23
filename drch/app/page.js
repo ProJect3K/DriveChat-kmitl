@@ -59,19 +59,17 @@ export default function Home() {
       socket.current.onmessage = function(event) {
         const message = event.data;
         
-        // Check if the message contains the active users list
         if (message.startsWith("Active users: ")) {
           const users = message.replace("Active users: ", "").split(", ");
           setActiveUsers(users);
         } else {
-          // Add regular messages to the chat
           setMessages((prevMessages) => [...prevMessages, message]);
         }
       };
 
       socket.current.onclose = function() {
         setIsJoined(false);
-        setActiveUsers([]); // Clear active users when disconnected
+        setActiveUsers([]);
       };
 
       setIsJoined(true);
@@ -86,7 +84,7 @@ export default function Home() {
   };
 
   return (
-    <div>
+    <div className="chat-container">
       {!isJoined ? (
         <div>
           <h2>Enter Chat</h2>
@@ -95,23 +93,55 @@ export default function Home() {
             placeholder="Enter your username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            className="input-field"
           />
-          <select value={room} onChange={(e) => setRoom(e.target.value)}>
-            <option value="room1">Room 1</option>
-            <option value="room2">Room 2</option>
-            <option value="room3">Room 3</option>
-            <option value="room4">Room 4</option>
-            <option value="room5">Room 5</option>
-          </select>
-          <button onClick={joinChat}>Join Chat</button>
+          
+          {isCreatingRoom ? (
+            <div className="create-room-container">
+              <input
+                type="text"
+                placeholder="Enter room name"
+                value={customRoom}
+                onChange={(e) => setCustomRoom(e.target.value)}
+                className="input-field"
+              />
+              <div className="button-group">
+                <button onClick={createRoom} className="primary-button">Create Room</button>
+                <button onClick={() => setIsCreatingRoom(false)} className="secondary-button">Cancel</button>
+              </div>
+            </div>
+          ) : (
+            <div className="join-room-container">
+              <select 
+                value={room} 
+                onChange={(e) => setRoom(e.target.value)}
+                className="room-select"
+              >
+                <option value="">Select a room</option>
+                {availableRooms.map((roomName) => (
+                  <option key={roomName} value={roomName}>{roomName}</option>
+                ))}
+              </select>
+              <button onClick={() => setIsCreatingRoom(true)} className="secondary-button">
+                Create New Room
+              </button>
+            </div>
+          )}
+          
+          <button 
+            onClick={joinChat} 
+            disabled={!username || !room}
+            className="primary-button"
+          >
+            Join Chat
+          </button>
         </div>
       ) : (
-        <div>
+        <div className="chat-room">
           <h1>Chat Room: {room}</h1>
-          <div>
+          <div className="active-users">
             <h3>Active Users</h3>
             <ul>
-              {/* Display all active users including the current user */}
               {activeUsers.map((user, index) => (
                 <li key={index}>
                   {user === username ? `${user} (You)` : user}
@@ -119,17 +149,21 @@ export default function Home() {
               ))}
             </ul>
           </div>
-          <div>
+          <div className="message-list">
             {messages.map((msg, index) => (
               <p key={index}>{msg}</p>
             ))}
           </div>
-          <input
-            type="text"
-            value={inputMessage}
-            onChange={(e) => setInputMessage(e.target.value)}
-          />
-          <button onClick={sendMessage}>Send</button>
+          <div className="message-input">
+            <input
+              type="text"
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+              placeholder="Type your message..."
+            />
+            <button onClick={sendMessage}>Send</button>
+          </div>
         </div>
       )}
     </div>
