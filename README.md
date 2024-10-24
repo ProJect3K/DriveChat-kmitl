@@ -82,7 +82,7 @@
   ```
 
 # CREDIT
-  | **Name**  |  **SURNAME**    | **ID**   |
+  | **NAME**  |  **SURNAME**    | **ID**   |
   |-----------|-----------------|----------|
   | THANATPAT | PROMTHONG       | 67070069 |
   | WARAKON   | TANGCHAROENARRI | 67070157 |
