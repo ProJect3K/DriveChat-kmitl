@@ -75,5 +75,11 @@
   npm run dev:both
   ```
 
+  - run server & website many port
+
+  ``` bash
+  npm run dev:multi
+  ```
+
 # CREDIT
 **HAVE ON ONE**
