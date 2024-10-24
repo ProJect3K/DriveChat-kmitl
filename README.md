@@ -83,12 +83,12 @@
 
 # CREDIT
 
-  **THANATPAT  PROMTHONG        67070069**
+  **THANATPAT&nbsp;&nbsp;PROMTHONG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;67070069**
 
-  **WARAKON    TANGCHAROENARRI  67070157**
+  **WARAKON&nbsp;&nbsp;&nbsp;&nbsp;TANGCHAROENARRI&nbsp;&nbsp;&nbsp;&nbsp;67070157**
 
-  **VARAPORN   SUKMUANG         67070159**
+  **VARAPORN&nbsp;&nbsp;&nbsp;&nbsp;SUKMUANG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;67070159**
 
-  **WARITSARA  SENACHAIBAN      67070160**
+  **WARITSARA&nbsp;&nbsp;&nbsp;SENACHAIBAN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;67070160**
 
-  **ATHIKARN   CHINJIRATTIKAN   67070194**
+  **ATHIKARN&nbsp;&nbsp;&nbsp;&nbsp;CHINJIRATTIKAN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;67070194**
