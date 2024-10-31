@@ -1,15 +1,16 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+import random
 
 app = FastAPI()
 
 # Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001", "http://localhost:3002"],
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
@@ -18,19 +19,17 @@ class RoomCreate(BaseModel):
 
 class ConnectionManager:
     def __init__(self):
-        # Track active connections and user names for each room
         self.active_connections: dict[str, list[WebSocket]] = {}
         self.active_users: dict[str, list[str]] = {}
-        self.available_rooms: set[str] = set()  # Track available rooms
+        self.available_rooms: set[str] = set()
 
     async def connect(self, websocket: WebSocket, room: str, username: str):
         await websocket.accept()
         
-        # Add websocket connection to the room
         if room not in self.active_connections:
             self.active_connections[room] = []
             self.active_users[room] = []
-            self.available_rooms.add(room)  # Add room to available rooms
+            self.available_rooms.add(room)
 
         self.active_connections[room].append(websocket)
         self.active_users[room].append(username)
@@ -39,12 +38,21 @@ class ConnectionManager:
         if room in self.active_connections:
             self.active_connections[room].remove(websocket)
             self.active_users[room].remove(username)
-            
-            # If the room is empty, clear the room data
+
+            # If room is empty, remove it completely
             if len(self.active_connections[room]) == 0:
                 del self.active_connections[room]
                 del self.active_users[room]
-                # Don't remove from available_rooms as the room still exists
+                self.available_rooms.remove(room)
+
+    def get_room_count(self, room: str) -> int:
+        return len(self.active_users.get(room, []))
+
+    def get_random_active_room(self) -> str:
+        active_rooms = [room for room in self.available_rooms 
+                       if self.get_room_count(room) > 0 
+                       and self.get_room_count(room) < 5]  # Limit to rooms with 1-4 users
+        return random.choice(active_rooms) if active_rooms else None
 
     async def send_personal_message(self, message: str, websocket: WebSocket):
         await websocket.send_text(message)
@@ -55,7 +63,6 @@ class ConnectionManager:
                 await connection.send_text(message)
 
     async def broadcast_user_list(self, room: str):
-        # Send the list of active users in the room
         user_list = self.active_users.get(room, [])
         message = f"Active users: {', '.join(user_list)}"
         for connection in self.active_connections.get(room, []):
@@ -63,7 +70,6 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
-# Endpoint to create a new room
 @app.post("/rooms")
 async def create_room(room_data: RoomCreate):
     room_name = room_data.room_name
@@ -72,17 +78,29 @@ async def create_room(room_data: RoomCreate):
         return {"message": f"Room {room_name} created successfully"}
     return {"message": f"Room {room_name} already exists"}
 
-# Endpoint to get available rooms
 @app.get("/rooms")
 async def get_rooms():
-    return list(manager.available_rooms)
+    return {
+        "rooms": list(manager.available_rooms),
+        "room_stats": {
+            room: manager.get_room_count(room) 
+            for room in manager.available_rooms
+        }
+    }
+
+@app.get("/rooms/random")
+async def get_random_room():
+    random_room = manager.get_random_active_room()
+    if random_room:
+        return {"room": random_room}
+    return {"room": None, "message": "No suitable rooms available"}
 
 @app.websocket("/ws/{room}/{username}")
 async def websocket_endpoint(websocket: WebSocket, room: str, username: str):
     await manager.connect(websocket, room, username)
     
     await manager.broadcast(f"{username} joined the chat room.", room, exclude=websocket)
-    await manager.send_personal_message(f"คุณเข้าร่วมบทสนทนา {room}", websocket)
+    await manager.send_personal_message("You have joined the chat room.", websocket)
     await manager.broadcast_user_list(room)
     
     try:
