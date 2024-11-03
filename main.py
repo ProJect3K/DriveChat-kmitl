@@ -34,10 +34,11 @@ class ConnectionManager:
             self.active_users[room] = []
             self.available_rooms.add(room)
         
+        # Cancel any pending cleanup for this room
         if room in self.room_cleanup_tasks and self.room_cleanup_tasks[room]:
             self.room_cleanup_tasks[room].cancel()
             self.room_cleanup_tasks[room] = None
-
+        
         self.active_connections[room].append(websocket)
         self.active_users[room].append(username)
 
@@ -90,10 +91,11 @@ class ConnectionManager:
                 await connection.send_text(message)
 
     async def broadcast_user_list(self, room: str):
-        user_list = self.active_users.get(room, [])
-        message = f"Active users: {', '.join(user_list)}"
-        for connection in self.active_connections.get(room, []):
-            await connection.send_text(message)
+        if room in self.active_users:
+            user_list = self.active_users.get(room, [])
+            message = f"Active users: {', '.join(user_list)}"
+            for connection in self.active_connections.get(room, []):
+                await connection.send_text(message)
 
 manager = ConnectionManager()
 
