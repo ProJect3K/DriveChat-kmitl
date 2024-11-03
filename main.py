@@ -2,6 +2,8 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import random
+import asyncio
+from typing import Optional
 
 app = FastAPI()
 
@@ -22,6 +24,7 @@ class ConnectionManager:
         self.active_connections: dict[str, list[WebSocket]] = {}
         self.active_users: dict[str, list[str]] = {}
         self.available_rooms: set[str] = set()
+        self.room_cleanup_tasks: dict[str, Optional[asyncio.Task]] = {}
 
     async def connect(self, websocket: WebSocket, room: str, username: str):
         await websocket.accept()
@@ -30,20 +33,44 @@ class ConnectionManager:
             self.active_connections[room] = []
             self.active_users[room] = []
             self.available_rooms.add(room)
+        
+        if room in self.room_cleanup_tasks and self.room_cleanup_tasks[room]:
+            self.room_cleanup_tasks[room].cancel()
+            self.room_cleanup_tasks[room] = None
 
         self.active_connections[room].append(websocket)
         self.active_users[room].append(username)
+
+    async def cleanup_empty_room(self, room: str):
+        try:
+            # Wait for 5 seconds before cleaning up the room
+            await asyncio.sleep(5)
+            
+            # Check if the room is still empty
+            if room in self.active_connections and len(self.active_connections[room]) == 0:
+                del self.active_connections[room]
+                del self.active_users[room]
+                self.available_rooms.remove(room)
+                # Clean up the task reference
+                self.room_cleanup_tasks[room] = None
+                print(f"Room {room} has been deleted due to inactivity")
+        except asyncio.CancelledError:
+            # Task was cancelled because a new user joined
+            pass
+        except Exception as e:
+            print(f"Error during room cleanup: {e}")
 
     def disconnect(self, websocket: WebSocket, room: str, username: str):
         if room in self.active_connections:
             self.active_connections[room].remove(websocket)
             self.active_users[room].remove(username)
 
-            # If room is empty, remove it completely
+            # If room is empty, schedule it for cleanup
             if len(self.active_connections[room]) == 0:
-                del self.active_connections[room]
-                del self.active_users[room]
-                self.available_rooms.remove(room)
+                # Create a cleanup task
+                self.room_cleanup_tasks[room] = asyncio.create_task(
+                    self.cleanup_empty_room(room)
+                )
 
     def get_room_count(self, room: str) -> int:
         return len(self.active_users.get(room, []))
