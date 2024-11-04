@@ -1,23 +1,21 @@
 {
-  "name": "drch",
+  "name": "demo-drch",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "dev:uvicorn" : "concurrently \"cd .. && uvicorn main:app --reload\"",
-    "dev:both": "concurrently \"cd .. && uvicorn main:app --reload\" \"next dev\"",
-    "dev:multi": "concurrently \"npm run dev:uvicorn\" \"next dev -p 3000\" \"next dev -p 3001\" \"next dev -p 3002\" \"next dev -p 3003\" \"next dev -p 3004\" \"next dev -p 3005\"",
+    "dev:both": "concurrently \"cd .. && uvicorn main:app --reload\" \"npm run dev\"",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
-    "concurrently": "^9.0.1",
     "next": "14.2.15",
     "react": "^18",
     "react-dom": "^18"
   },
   "devDependencies": {
+    "concurrently": "^9.0.1",
     "postcss": "^8",
     "tailwindcss": "^3.4.1"
   },
