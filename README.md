@@ -76,4 +76,10 @@
   ```
 
 # CREDIT
-**บ่ต้องอยากรู้ดอก**
+  | **NAME**  |  **SURNAME**    | **ID**   |
+  |-----------|-----------------|----------|
+  | THANATPAT | PROMTHONG       | 67070069 |
+  | WARAKON   | TANGCHAROENARRI | 67070157 |
+  | VARAPORN  | SUKMUANG        | 67070159 |
+  | WARITSARA | SENACHAIBAN     | 67070160 |
+  | ATHIKARN  | CHINJIRATTIKAN  | 67070194 |
