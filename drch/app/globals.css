@@ -129,3 +129,28 @@ h1, h2, h3 {
 .message-input input {
   flex-grow: 1;
 }
+
+.transport-button {
+  transition: all 0.2s ease-in-out;
+}
+
+.transport-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.join-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.create-room-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
