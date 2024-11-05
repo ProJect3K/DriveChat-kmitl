@@ -88,12 +88,15 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedType, setSelectedType] = useState(null);
   const [roomCapacity, setRoomCapacity] = useState(0);
+  const [roomName, setRoomName] = useState("");
   const socket = useRef(null);
 
   const handleTypeSelect = (type) => {
     setSelectedType(type);
-    // Auto-generate room name based on type
-    setCustomRoom(`${type}_${Math.random().toString(36).substr(2, 6)}`);
+    // Generate default room name if custom name is not set
+    if (!roomName) {
+      setCustomRoom(`${type}_${Math.random().toString(36).substr(2, 6)}`);
+    }
   };
 
   const getCapacityByType = (type) => {
@@ -108,6 +111,16 @@ export default function Home() {
         return 15;
       default:
         return 4;
+    }
+  };
+
+  const handleRoomNameChange = (e) => {
+    const value = e.target.value;
+    setRoomName(value);
+    if (value) {
+      setCustomRoom(value);
+    } else if (selectedType) {
+      setCustomRoom(`${selectedType}_${Math.random().toString(36).substr(2, 6)}`);
     }
   };
 
@@ -229,6 +242,13 @@ export default function Home() {
                 onSelectType={handleTypeSelect}
                 selectedType={selectedType}
               />
+              <input
+                type="text"
+                placeholder="Enter room name (optional)"
+                value={roomName}
+                onChange={handleRoomNameChange}
+                className="input-field"
+              />
               <div className="button-group">
                 <button 
                   onClick={createRoom} 
@@ -241,6 +261,7 @@ export default function Home() {
                   onClick={() => {
                     setIsCreatingRoom(false);
                     setSelectedType(null);
+                    setRoomName("");
                   }} 
                   className="secondary-button"
                   disabled={isLoading}
