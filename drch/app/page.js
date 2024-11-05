@@ -11,26 +11,45 @@ export default function Home() {
   const [isJoined, setIsJoined] = useState(false);
   const [activeUsers, setActiveUsers] = useState([]);
   const [availableRooms, setAvailableRooms] = useState([]);
+  const [roomStats, setRoomStats] = useState({});
   const [isCreatingRoom, setIsCreatingRoom] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const socket = useRef(null);
 
   useEffect(() => {
-    // Fetch available rooms when component mounts
     fetchAvailableRooms();
   }, []);
 
   const fetchAvailableRooms = async () => {
     try {
       const response = await fetch('http://127.0.0.1:8000/rooms');
-      const rooms = await response.json();
-      setAvailableRooms(rooms);
+      const data = await response.json();
+      setAvailableRooms(data.rooms);
+      setRoomStats(data.room_stats);
     } catch (error) {
       console.error('Error fetching rooms:', error);
     }
   };
 
+  const joinRandomRoom = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('http://127.0.0.1:8000/rooms/random');
+      const data = await response.json();
+      if (data.room) {
+        setRoom(data.room);
+      } else {
+        alert('No suitable rooms available. Please create a new room or join an existing one.');
+      }
+    } catch (error) {
+      console.error('Error joining random room:', error);
+    }
+    setIsLoading(false);
+  };
+
   const createRoom = async () => {
     if (customRoom.trim()) {
+      setIsLoading(true);
       try {
         const response = await fetch('http://127.0.0.1:8000/rooms', {
           method: 'POST',
@@ -42,13 +61,14 @@ export default function Home() {
         
         if (response.ok) {
           setRoom(customRoom);
-          setAvailableRooms([...availableRooms, customRoom]);
+          await fetchAvailableRooms();
           setIsCreatingRoom(false);
           setCustomRoom("");
         }
       } catch (error) {
         console.error('Error creating room:', error);
       }
+      setIsLoading(false);
     }
   };
 
@@ -70,6 +90,7 @@ export default function Home() {
       socket.current.onclose = function() {
         setIsJoined(false);
         setActiveUsers([]);
+        fetchAvailableRooms(); // Refresh room list when disconnected
       };
 
       setIsJoined(true);
@@ -106,8 +127,20 @@ export default function Home() {
                 className="input-field"
               />
               <div className="button-group">
-                <button onClick={createRoom} className="primary-button">Create Room</button>
-                <button onClick={() => setIsCreatingRoom(false)} className="secondary-button">Cancel</button>
+                <button 
+                  onClick={createRoom} 
+                  className="primary-button"
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Creating...' : 'Create Room'}
+                </button>
+                <button 
+                  onClick={() => setIsCreatingRoom(false)} 
+                  className="secondary-button"
+                  disabled={isLoading}
+                >
+                  Cancel
+                </button>
               </div>
             </div>
           ) : (
@@ -119,18 +152,33 @@ export default function Home() {
               >
                 <option value="">Select a room</option>
                 {availableRooms.map((roomName) => (
-                  <option key={roomName} value={roomName}>{roomName}</option>
+                  <option key={roomName} value={roomName}>
+                    {roomName} ({roomStats[roomName] || 0} users)
+                  </option>
                 ))}
               </select>
-              <button onClick={() => setIsCreatingRoom(true)} className="secondary-button">
-                Create New Room
-              </button>
+              <div className="button-group">
+                <button 
+                  onClick={joinRandomRoom} 
+                  className="secondary-button"
+                  disabled={isLoading || !username}
+                >
+                  {isLoading ? 'Finding room...' : 'Join Random Room'}
+                </button>
+                <button 
+                  onClick={() => setIsCreatingRoom(true)} 
+                  className="secondary-button"
+                  disabled={isLoading}
+                >
+                  Create New Room
+                </button>
+              </div>
             </div>
           )}
           
           <button 
             onClick={joinChat} 
-            disabled={!username || !room}
+            disabled={!username || !room || isLoading}
             className="primary-button"
           >
             Join Chat
@@ -138,7 +186,7 @@ export default function Home() {
         </div>
       ) : (
         <div className="chat-room">
-          <h1>Chat Room: {room}</h1>
+          <h1>Chat Room: {room} ({activeUsers.length} users)</h1>
           <div className="active-users">
             <h3>Active Users</h3>
             <ul>
