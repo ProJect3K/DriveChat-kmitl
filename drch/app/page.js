@@ -2,6 +2,13 @@
 
 import { useState, useEffect, useRef } from 'react';
 
+const ROOM_CAPACITIES = [
+  { value: 2, label: '2 Users' },
+  { value: 4, label: '4 Users' },
+  { value: 10, label: '10 Users' },
+  { value: 15, label: '15 Users' }
+];
+
 export default function Home() {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
@@ -12,6 +19,8 @@ export default function Home() {
   const [activeUsers, setActiveUsers] = useState([]);
   const [isCreatingRoom, setIsCreatingRoom] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedCapacity, setSelectedCapacity] = useState(4);
+  const [roomCapacity, setRoomCapacity] = useState(0);
   const socket = useRef(null);
 
   const joinRandomRoom = async () => {
@@ -26,6 +35,7 @@ export default function Home() {
       const data = await response.json();
       if (data.room) {
         setRoom(data.room);
+        setRoomCapacity(data.capacity);
         joinChat(data.room);
       } else {
         alert('No rooms available. Please create a new room to start chatting.');
@@ -51,14 +61,22 @@ export default function Home() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ room_name: customRoom }),
+          body: JSON.stringify({ 
+            room_name: customRoom,
+            capacity: selectedCapacity
+          }),
         });
         
         if (response.ok) {
+          const data = await response.json();
           setRoom(customRoom);
+          setRoomCapacity(data.capacity);
           setIsCreatingRoom(false);
           setCustomRoom("");
           joinChat(customRoom);
+        } else {
+          const error = await response.json();
+          alert(error.detail);
         }
       } catch (error) {
         console.error('Error creating room:', error);
@@ -75,20 +93,26 @@ export default function Home() {
       socket.current.onmessage = function(event) {
         const message = event.data;
         
-        if (message.startsWith("Active users: ")) {
-          const users = message.replace("Active users: ", "").split(", ");
+        if (message.startsWith("Active users")) {
+          const usersPart = message.split(": ")[1];
+          const users = usersPart.split(", ");
           setActiveUsers(users);
         } else {
           setMessages((prevMessages) => [...prevMessages, message]);
         }
       };
 
-      socket.current.onclose = function() {
+      socket.current.onclose = function(event) {
+        if (event.reason) {
+          alert(event.reason);
+        }
         setIsJoined(false);
         setActiveUsers([]);
       };
 
-      setIsJoined(true);
+      socket.current.onopen = function() {
+        setIsJoined(true);
+      };
     }
   };
 
@@ -121,6 +145,17 @@ export default function Home() {
                 onChange={(e) => setCustomRoom(e.target.value)}
                 className="input-field"
               />
+              <select
+                value={selectedCapacity}
+                onChange={(e) => setSelectedCapacity(Number(e.target.value))}
+                className="room-select"
+              >
+                {ROOM_CAPACITIES.map(({ value, label }) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
               <div className="button-group">
                 <button 
                   onClick={createRoom} 
@@ -161,9 +196,9 @@ export default function Home() {
         </div>
       ) : (
         <div className="chat-room">
-          <h1>Chat Room: {room} ({activeUsers.length} users)</h1>
+          <h1>Chat Room: {room}</h1>
           <div className="active-users">
-            <h3>Active Users</h3>
+            <h3>Active Users ({activeUsers.length}/{roomCapacity})</h3>
             <ul>
               {activeUsers.map((user, index) => (
                 <li key={index}>
@@ -184,8 +219,9 @@ export default function Home() {
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
               placeholder="Type your message..."
+              className="input-field"
             />
-            <button onClick={sendMessage}>Send</button>
+            <button onClick={sendMessage} className="primary-button">Send</button>
           </div>
         </div>
       )}
