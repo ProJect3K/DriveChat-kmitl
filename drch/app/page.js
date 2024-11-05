@@ -64,6 +64,8 @@ export default function Home() {
           await fetchAvailableRooms();
           setIsCreatingRoom(false);
           setCustomRoom("");
+          // Auto-join the newly created room
+          joinChat(customRoom);
         }
       } catch (error) {
         console.error('Error creating room:', error);
@@ -72,9 +74,9 @@ export default function Home() {
     }
   };
 
-  const joinChat = () => {
-    if (username && room) {
-      socket.current = new WebSocket(`ws://127.0.0.1:8000/ws/${room}/${username}`);
+  const joinChat = (roomToJoin = room) => {
+    if (username && roomToJoin) {
+      socket.current = new WebSocket(`ws://127.0.0.1:8000/ws/${roomToJoin}/${username}`);
       
       socket.current.onmessage = function(event) {
         const message = event.data;
@@ -130,9 +132,9 @@ export default function Home() {
                 <button 
                   onClick={createRoom} 
                   className="primary-button"
-                  disabled={isLoading}
+                  disabled={isLoading || !username}
                 >
-                  {isLoading ? 'Creating...' : 'Create Room'}
+                  {isLoading ? 'Creating...' : 'Create & Join Room'}
                 </button>
                 <button 
                   onClick={() => setIsCreatingRoom(false)} 
@@ -177,7 +179,7 @@ export default function Home() {
           )}
           
           <button 
-            onClick={joinChat} 
+            onClick={() => joinChat()} 
             disabled={!username || !room || isLoading}
             className="primary-button"
           >
