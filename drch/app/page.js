@@ -10,44 +10,39 @@ export default function Home() {
   const [customRoom, setCustomRoom] = useState("");
   const [isJoined, setIsJoined] = useState(false);
   const [activeUsers, setActiveUsers] = useState([]);
-  const [availableRooms, setAvailableRooms] = useState([]);
-  const [roomStats, setRoomStats] = useState({});
   const [isCreatingRoom, setIsCreatingRoom] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const socket = useRef(null);
 
-  useEffect(() => {
-    fetchAvailableRooms();
-  }, []);
-
-  const fetchAvailableRooms = async () => {
-    try {
-      const response = await fetch('http://127.0.0.1:8000/rooms');
-      const data = await response.json();
-      setAvailableRooms(data.rooms);
-      setRoomStats(data.room_stats);
-    } catch (error) {
-      console.error('Error fetching rooms:', error);
-    }
-  };
-
   const joinRandomRoom = async () => {
+    if (!username) {
+      alert('Please enter a username first');
+      return;
+    }
+    
     setIsLoading(true);
     try {
       const response = await fetch('http://127.0.0.1:8000/rooms/random');
       const data = await response.json();
       if (data.room) {
         setRoom(data.room);
+        joinChat(data.room);
       } else {
-        alert('No suitable rooms available. Please create a new room or join an existing one.');
+        alert('No rooms available. Please create a new room to start chatting.');
       }
     } catch (error) {
       console.error('Error joining random room:', error);
+      alert('Error joining room. Please try again.');
     }
     setIsLoading(false);
   };
 
   const createRoom = async () => {
+    if (!username) {
+      alert('Please enter a username first');
+      return;
+    }
+    
     if (customRoom.trim()) {
       setIsLoading(true);
       try {
@@ -61,20 +56,19 @@ export default function Home() {
         
         if (response.ok) {
           setRoom(customRoom);
-          await fetchAvailableRooms();
           setIsCreatingRoom(false);
           setCustomRoom("");
-          // Auto-join the newly created room
           joinChat(customRoom);
         }
       } catch (error) {
         console.error('Error creating room:', error);
+        alert('Error creating room. Please try again.');
       }
       setIsLoading(false);
     }
   };
 
-  const joinChat = (roomToJoin = room) => {
+  const joinChat = (roomToJoin) => {
     if (username && roomToJoin) {
       socket.current = new WebSocket(`ws://127.0.0.1:8000/ws/${roomToJoin}/${username}`);
       
@@ -92,7 +86,6 @@ export default function Home() {
       socket.current.onclose = function() {
         setIsJoined(false);
         setActiveUsers([]);
-        fetchAvailableRooms(); // Refresh room list when disconnected
       };
 
       setIsJoined(true);
@@ -109,8 +102,8 @@ export default function Home() {
   return (
     <div className="chat-container">
       {!isJoined ? (
-        <div>
-          <h2>Enter Chat</h2>
+        <div className="join-container">
+          <h2>Welcome to Chat</h2>
           <input
             type="text"
             placeholder="Enter your username"
@@ -132,7 +125,7 @@ export default function Home() {
                 <button 
                   onClick={createRoom} 
                   className="primary-button"
-                  disabled={isLoading || !username}
+                  disabled={isLoading || !username || !customRoom.trim()}
                 >
                   {isLoading ? 'Creating...' : 'Create & Join Room'}
                 </button>
@@ -146,23 +139,11 @@ export default function Home() {
               </div>
             </div>
           ) : (
-            <div className="join-room-container">
-              <select 
-                value={room} 
-                onChange={(e) => setRoom(e.target.value)}
-                className="room-select"
-              >
-                <option value="">Select a room</option>
-                {availableRooms.map((roomName) => (
-                  <option key={roomName} value={roomName}>
-                    {roomName} ({roomStats[roomName] || 0} users)
-                  </option>
-                ))}
-              </select>
+            <div className="join-options-container">
               <div className="button-group">
                 <button 
                   onClick={joinRandomRoom} 
-                  className="secondary-button"
+                  className="primary-button"
                   disabled={isLoading || !username}
                 >
                   {isLoading ? 'Finding room...' : 'Join Random Room'}
@@ -177,14 +158,6 @@ export default function Home() {
               </div>
             </div>
           )}
-          
-          <button 
-            onClick={() => joinChat()} 
-            disabled={!username || !room || isLoading}
-            className="primary-button"
-          >
-            Join Chat
-          </button>
         </div>
       ) : (
         <div className="chat-room">
