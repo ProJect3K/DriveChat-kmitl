@@ -38,7 +38,7 @@ const TransportButtons = ({ onSelectType, selectedType }) => {
             selectedType === ROOM_TYPES.CAR ? 'bg-orange-100' : 'bg-white'
           }`}>
             <Car className="w-5 h-5 text-orange-500" />
-            <span className="text-sm text-orange-500">เท็กซี่</span>
+            <span className="text-sm text-orange-500">แท้กซี่</span>
           </div>
         </button>
       </div>
@@ -54,7 +54,7 @@ const TransportButtons = ({ onSelectType, selectedType }) => {
             selectedType === ROOM_TYPES.LOCATION ? 'bg-blue-50' : 'bg-white'
           }`}>
             <MapPin className="w-5 h-5 text-gray-600" />
-            <span className="text-sm text-gray-600">ลองแวว</span>
+            <span className="text-sm text-gray-600">สองแถว</span>
           </div>
         </button>
 
@@ -68,7 +68,7 @@ const TransportButtons = ({ onSelectType, selectedType }) => {
             selectedType === ROOM_TYPES.BUS ? 'bg-blue-50' : 'bg-white'
           }`}>
             <Bus className="w-5 h-5 text-gray-600" />
-            <span className="text-sm text-gray-600">EV มินิ</span>
+            <span className="text-sm text-gray-600">Ev มินิบัส</span>
           </div>
         </button>
       </div>
@@ -125,21 +125,22 @@ export default function Home() {
   };
 
   const joinRandomRoom = async () => {
-    if (!username) {
-      alert('Please enter a username first');
+    if (!username || !selectedType) {
+      alert('Please enter a username and select a room type');
       return;
     }
-    
+  
     setIsLoading(true);
     try {
-      const response = await fetch('http://127.0.0.1:8000/rooms/random');
+      // Send the selected room type as a query parameter to filter rooms by type
+      const response = await fetch(`http://127.0.0.1:8000/rooms/random?room_type=${selectedType}`);
       const data = await response.json();
       if (data.room) {
         setRoom(data.room);
         setRoomCapacity(data.capacity);
         joinChat(data.room);
       } else {
-        alert('No rooms available. Please create a new room to start chatting.');
+        alert('No rooms available for the selected type. Please create a new room.');
       }
     } catch (error) {
       console.error('Error joining random room:', error);
@@ -226,7 +227,7 @@ export default function Home() {
     <div className="chat-container">
       {!isJoined ? (
         <div className="join-container">
-          <h2 className="text-2xl font-semibold mb-6">Welcome to Chat</h2>
+          <h2 className="text-2xl font-semibold mb-6">DriveChat@kmitl</h2>
           <input
             type="text"
             placeholder="Enter your username"
