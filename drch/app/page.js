@@ -30,6 +30,12 @@ export default function Home() {
           const usersPart = message.split(": ")[1];
           const users = usersPart.split(", ");
           setActiveUsers(users);
+        } else if (message.startsWith("System: ROOM_CHANGE:")) {
+          const newRoom = message.split(":")[2];
+          setRoom(newRoom);
+          // Re-establish websocket connection for new room
+          socket.current.close();
+          joinChat(newRoom);
         } else {
           setMessages((prevMessages) => [...prevMessages, message]);
         }
@@ -53,6 +59,15 @@ export default function Home() {
     if (inputMessage !== "" && socket.current) {
       socket.current.send(inputMessage);
       setInputMessage("");
+    }
+  };
+
+  const handleRoomChange = (newRoom) => {
+    setRoom(newRoom);
+    if (newRoom === 'duck_pond') {
+      // Re-establish websocket connection for duck pond
+      socket.current.close();
+      joinChat('duck_pond');
     }
   };
 
@@ -80,6 +95,7 @@ export default function Home() {
       ) : (
         <ChatRoom
           room={room}
+          setRoom={handleRoomChange}
           activeUsers={activeUsers}
           roomCapacity={roomCapacity}
           username={username}
@@ -87,6 +103,8 @@ export default function Home() {
           inputMessage={inputMessage}
           setInputMessage={setInputMessage}
           sendMessage={sendMessage}
+          nextStation="ped pong"
+          currentStatus="Driving"
         />
       )}
     </div>

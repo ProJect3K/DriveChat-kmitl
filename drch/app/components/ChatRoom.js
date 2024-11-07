@@ -16,18 +16,23 @@ export default function ChatRoom({
         <h3 className="text-lg font-medium mb-2">
           Active Users ({activeUsers.length}/{roomCapacity})
         </h3>
-        <ul className="space-y-1">
+        <div className="space-y-1 flex flex-wrap">
           {activeUsers.map((user, index) => (
-            <li key={index} className="text-gray-700">
+            <div
+              key={index}
+              className={`text-gray-700 bg-gray-200 p-2 m-2 rounded flex items-center justify-center h-10 min-w-[70px] ${
+              user === username ? 'bg-gray-300 font-bold' : ''
+              }`}>
               {user === username ? `${user} (You)` : user}
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
+
       </div>
 
       <div className="h-96 overflow-y-auto p-4 bg-white rounded-lg border">
         {messages.map((msg, index) => (
-          <p key={index} className="py-2 border-b border-gray-100 last:border-0">
+          <p key={index} className="py-2 border-b border-gray-100 last:border-0" >
             {msg}
           </p>
         ))}
