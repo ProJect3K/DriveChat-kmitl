@@ -18,6 +18,16 @@ const ChatRoom = ({
   const [localNextStation, setLocalNextStation] = useState(nextStation);
   const [previousRoom, setPreviousRoom] = useState("");
 
+  const getAlignmentClass = (isSystemMessage, username, sender) => {
+    if (isSystemMessage) {
+      return 'items-center';
+    } else if (username === sender) {
+      return 'items-end';
+    } else {
+      return 'items-start';
+    }
+  };
+
   useEffect(() => {
     let timer;
     if (room !== 'duck_pond' && timeRemaining > 0) {
@@ -118,7 +128,7 @@ const ChatRoom = ({
               return (
                 <div 
                   key={index} 
-                  className={`flex flex-col ${isSystemMessage ? 'items-center' : 'items-start'}`}
+                  className={`flex flex-col ${getAlignmentClass(isSystemMessage, username, sender)}`}
                 >
                   {!isSystemMessage && (
                     <div className="text-sm text-gray-600 mb-1 px-2">
