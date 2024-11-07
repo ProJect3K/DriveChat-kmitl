@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 const ChatRoom = ({
   room,
   setRoom,
-  activeUsers = [], // Add default empty array
+  activeUsers = [],
   roomCapacity,
   username,
   messages,
@@ -13,7 +13,10 @@ const ChatRoom = ({
   nextStation = "ped pong",
   currentStatus = "Driving",
 }) => {
-  const [timeRemaining, setTimeRemaining] = useState(180);
+  const [timeRemaining, setTimeRemaining] = useState(30);
+  const [localStatus, setLocalStatus] = useState(currentStatus);
+  const [localNextStation, setLocalNextStation] = useState(nextStation);
+  const [previousRoom, setPreviousRoom] = useState("");
 
   useEffect(() => {
     let timer;
@@ -22,7 +25,13 @@ const ChatRoom = ({
         setTimeRemaining(prev => {
           const newTime = Math.max(0, prev - 1);
           if (newTime === 0) {
-            setRoom('duck_pond');
+            // Store the current room before transition
+            setPreviousRoom(room);
+            // Update status to show we're at ped pong
+            setLocalStatus("ped pong");
+            setLocalNextStation(room); // Set next station to previous room
+            // Change to ped pong room
+            setRoom('ped_pong');
           }
           return newTime;
         });
@@ -31,6 +40,17 @@ const ChatRoom = ({
     return () => clearInterval(timer);
   }, [room, timeRemaining, setRoom]);
 
+  // Handle status updates when entering/leaving ped pong
+  useEffect(() => {
+    if (room === 'ped_pong') {
+      setLocalStatus("ped pong");
+      setLocalNextStation(previousRoom || "Return to travel");
+    } else if (previousRoom && room === previousRoom) {
+      setLocalStatus("Driving");
+      setLocalNextStation("ped pong");
+    }
+  }, [room, previousRoom]);
+
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
@@ -38,6 +58,7 @@ const ChatRoom = ({
   };
 
   const getRoomDisplayName = () => {
+    if (room === 'ped_pong') return 'Ped Pong';
     if (room === 'duck_pond') return 'Duck Pond';
     const parts = room.split('_');
     if (parts.length > 2) {
@@ -48,7 +69,6 @@ const ChatRoom = ({
     return room;
   };
 
-  // Safely get the number of active users
   const activeUserCount = Array.isArray(activeUsers) ? activeUsers.length : 0;
 
   return (
@@ -56,28 +76,25 @@ const ChatRoom = ({
       {/* Status Bar */}
       <div className="flex justify-between items-center mb-4 bg-white rounded-lg p-4 shadow-sm">
         <div className="space-y-1">
-          <div className="text-lg font-semibold">Next Station: {nextStation}</div>
-          <div className="text-lg">Now: {currentStatus}</div>
+          <div className="text-lg font-semibold">Next Station: {localNextStation}</div>
+          <div className="text-lg">Now: {localStatus}</div>
         </div>
         <div className="text-right">
-          {room !== 'duck_pond' && (
+          {room !== 'duck_pond' && room !== 'ped_pong' && (
             <div className="text-lg">TIME REMAINING: {formatTime(timeRemaining)}</div>
           )}
         </div>
       </div>
 
-      {/* Main Content Area - Split Layout */}
+      {/* Rest of the component remains the same */}
       <div className="flex gap-4 h-[calc(100vh-200px)]">
-        {/* Video Section */}
         <div className="w-1/2 bg-white rounded-lg shadow-lg p-4">
           <div className="h-full flex items-center justify-center bg-gray-900 rounded-lg">
             <div className="text-4xl text-white">video</div>
           </div>
         </div>
 
-        {/* Chat Section */}
         <div className="w-1/2 bg-white rounded-lg shadow-lg p-4 flex flex-col">
-          {/* Chat Header */}
           <div className="border-b pb-2 mb-4">
             <h2 className="text-xl font-bold">Room: {getRoomDisplayName()}</h2>
             <div className="text-sm text-gray-600">
@@ -85,7 +102,6 @@ const ChatRoom = ({
             </div>
           </div>
 
-          {/* Messages Area */}
           <div className="flex-1 overflow-y-auto mb-4 px-4 space-y-4">
             {messages.map((msg, index) => {
               const isSystemMessage = msg.startsWith("System:");
@@ -121,7 +137,6 @@ const ChatRoom = ({
             })}
           </div>
 
-          {/* Input Area */}
           <div className="border-t pt-4">
             <div className="flex gap-2">
               <input
@@ -143,7 +158,6 @@ const ChatRoom = ({
         </div>
       </div>
 
-      {/* Leave Chat Button */}
       <button 
         onClick={() => window.location.reload()}
         className="mt-4 px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
