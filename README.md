@@ -46,7 +46,7 @@
   - Install package
 
     ``` bash
-    pip install -r requirements.txt && cd demo-drch && npm install
+    pip install -r requirements.txt && cd drch && npm install
     ```
 
 ## SELECT INTERPRETER
