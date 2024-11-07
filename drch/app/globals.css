@@ -13,7 +13,9 @@
 * {
   font-family: 'MyCustomFont', sans-serif; /* Apply globally */
 }
-
+body {
+  color: #87451A; /* Brown color */
+}
 
 @layer components {
   .input-base {

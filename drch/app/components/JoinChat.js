@@ -130,7 +130,7 @@ export default function JoinChat({
     <>
       {/* user */}
     <div className="flex flex-col items-center max-w-2xl mx-auto">
-      <h2 className="text-2xl font-semibold mb-6">DriveChat@kmitl</h2>
+      <h2 className="text-2xl font-semibold mb-6 text-lightbrown">DriveChat@kmitl</h2>
       
       {/* Username and User Type Selection */}
       <div className="w-full flex gap-2 mb-6">
