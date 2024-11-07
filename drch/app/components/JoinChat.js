@@ -20,12 +20,10 @@ export default function JoinChat({
   setRoom,
   setRoomCapacity,
   joinChat,
-
-  onSelectUserType,
-
 }) {
   const [userType, setUserType] = useState(null);
   const [noRoomsAvailable, setNoRoomsAvailable] = useState(false);
+  const [roomDisplayName, setRoomDisplayName] = useState("");
 
   const getCapacityByType = (type) => {
     switch(type) {
@@ -41,25 +39,23 @@ export default function JoinChat({
     setSelectedType(type);
     setNoRoomsAvailable(false);
     if (!roomName && isCreatingRoom) {
-      setCustomRoom(`${type}_${Math.random().toString(36).substr(2, 6)}`);
+      const randomId = Math.random().toString(36).substr(2, 6);
+      setCustomRoom(`${type}_${randomId}`);
     }
   };
 
   const handleUserTypeSelect = (type) => {
     setUserType(type);
-    setSelectedType(null);
+    if (type === 'passenger') {
+      setSelectedType(null);
+    }
     setIsCreatingRoom(false);
     setNoRoomsAvailable(false);
   };
 
   const handleRoomNameChange = (e) => {
     const value = e.target.value;
-    setRoomName(value);
-    if (value) {
-      setCustomRoom(value);
-    } else if (selectedType) {
-      setCustomRoom(`${selectedType}_${Math.random().toString(36).substr(2, 6)}`);
-    }
+    setRoomDisplayName(value);
   };
 
   const joinRandomRoom = async () => {
@@ -70,15 +66,8 @@ export default function JoinChat({
   
     setIsLoading(true);
     try {
-      // First, let's debug what rooms are available
-      const debugResponse = await fetch('http://127.0.0.1:8000/rooms/debug');
-      const debugData = await debugResponse.json();
-      console.log('Available rooms:', debugData);
-  
-      // Now try to join a room
-      const response = await fetch(`http://127.0.0.1:8000/rooms/random?transport_type=${selectedType}`);
+      const response = await fetch(`http://127.0.0.1:8000/rooms/random?transport_type=${selectedType}&user_type=${userType}`);
       const data = await response.json();
-      console.log('Join room response:', data);
       
       if (data.room) {
         console.log('Joining room:', data.room);
@@ -86,12 +75,7 @@ export default function JoinChat({
         setRoomCapacity(data.capacity);
         joinChat(data.room);
       } else {
-        console.log('No room available, userType:', userType);
-        if (userType === 'passenger') {
-          setNoRoomsAvailable(true);
-        } else if (userType === 'driver') {
-          setIsCreatingRoom(true);
-        }
+        setNoRoomsAvailable(true);
       }
     } catch (error) {
       console.error('Error joining random room:', error);
@@ -109,7 +93,7 @@ export default function JoinChat({
     setIsLoading(true);
     try {
       const capacity = getCapacityByType(selectedType);
-      console.log('Creating room:', customRoom, 'with capacity:', capacity);
+      const finalRoomName = customRoom + (roomDisplayName ? `_${roomDisplayName}` : '');
       
       const response = await fetch('http://127.0.0.1:8000/rooms', {
         method: 'POST',
@@ -117,22 +101,21 @@ export default function JoinChat({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          room_name: customRoom,
+          room_name: finalRoomName,
           capacity: capacity,
-          creator_type: userType
+          creator_type: userType,
+          display_name: roomDisplayName
         }),
       });
       
       if (response.ok) {
         const data = await response.json();
-        console.log('Room created successfully:', data);
-        setRoom(customRoom);
+        setRoom(finalRoomName);
         setRoomCapacity(data.capacity);
         setIsCreatingRoom(false);
-        joinChat(customRoom);
+        joinChat(finalRoomName);
       } else {
         const error = await response.json();
-        console.error('Error response:', error);
         alert(error.detail);
       }
     } catch (error) {
@@ -145,73 +128,74 @@ export default function JoinChat({
   return (
     <div className="flex flex-col items-center max-w-2xl mx-auto">
       <h2 className="text-2xl font-semibold mb-6">DriveChat@kmitl</h2>
-      <div className="w-full flex gap-2">
+      
+      {/* Username and User Type Selection */}
+      <div className="w-full flex gap-2 mb-6">
         <input
           type="text"
           placeholder="Enter your username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          className="w-full px-4 py-2 mb-4 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          style={{ flex: 4 }}
+          className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
-      <div style={{ flex: 3 }}> 
-        <TypeUser
-          userType={userType}
-          onSelectUserType={handleUserTypeSelect}
-        />
+        <div className="w-1/3">
+          <TypeUser
+            userType={userType}
+            onSelectUserType={handleUserTypeSelect}
+          />
+        </div>
       </div>
-    </div>
 
-      
+      {/* Room Creation for Drivers */}
       {isCreatingRoom && userType === 'driver' ? (
-        <div className="w-full">
-          <h3 className="text-lg font-medium mb-4">Create New Room</h3>
+        <div className="w-full space-y-4">
+          <h3 className="text-lg font-medium">Create New Room</h3>
+          
           <TransportButtons 
             onSelectType={handleTypeSelect}
             selectedType={selectedType}
             userType={userType}
-            onSelectUserType={handleUserTypeSelect}
           />
+          
           <input
             type="text"
             placeholder="Enter room name (optional)"
-            value={roomName}
+            value={roomDisplayName}
             onChange={handleRoomNameChange}
-            className="w-full px-4 py-2 mb-4 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
+          
           <div className="flex gap-3">
             <button 
               onClick={createRoom} 
-              disabled={isLoading || !username || !selectedType || !customRoom}
-              className="createBtn"
-              style={{ flex: 5 }}
+              disabled={isLoading || !username || !selectedType}
+              className="flex-1 px-4 py-2 bg-amber-400 text-black rounded-lg hover:bg-amber-500 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
             >
               {isLoading ? 'Creating...' : 'Create & Join Room'}
             </button>
             <button 
               onClick={() => {
                 setIsCreatingRoom(false);
-                setRoomName("");
+                setRoomDisplayName("");
               }} 
               disabled={isLoading}
-              className="cancleBtn"
-              style={{ flex: 1 }}
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
             >
               Cancel
             </button>
           </div>
         </div>
       ) : (
-        <div className="w-full">
+        /* Room Joining Interface */
+        <div className="w-full space-y-4">
           <TransportButtons 
             onSelectType={handleTypeSelect}
             selectedType={selectedType}
             userType={userType}
-            onSelectUserType={handleUserTypeSelect}
           />
           
           {noRoomsAvailable && userType === 'passenger' && (
-            <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800">
+            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800">
               No available rooms for this transport type. Please try another type or wait for a driver to create a room.
             </div>
           )}
@@ -220,7 +204,7 @@ export default function JoinChat({
             {userType === 'passenger' && (
               <button 
                 onClick={joinRandomRoom} 
-                disabled={isLoading || !username || !selectedType || !userType}
+                disabled={isLoading || !username || !selectedType}
                 className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
               >
                 {isLoading ? 'Finding room...' : 'Join Random Room'}
@@ -231,10 +215,10 @@ export default function JoinChat({
               <button 
                 onClick={() => {
                   setIsCreatingRoom(true);
-                  setRoomName("");
+                  setRoomDisplayName("");
                 }} 
                 disabled={isLoading}
-                className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
+                className="flex-1 px-4 py-2 bg-amber-400 text-black rounded-lg hover:bg-amber-500 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
               >
                 Create New Room
               </button>
