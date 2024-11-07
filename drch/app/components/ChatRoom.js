@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { ROOM_TYPES } from '../lib/constants';
 
 const ChatRoom = ({
   room,
@@ -63,6 +62,7 @@ const ChatRoom = ({
     }
   }, [room, previousRoom]);
 
+  // set vdo in chat room
   useEffect(() => {
     if (room === 'ped_pong') {
       setVdoChat("/videos/duck.mp4")
