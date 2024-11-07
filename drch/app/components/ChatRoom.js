@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { ROOM_TYPES } from '../lib/constants';
 
 const ChatRoom = ({
   room,
@@ -13,7 +14,7 @@ const ChatRoom = ({
   nextStation = "ped pong",
   currentStatus = "Driving",
 }) => {
-  const [timeRemaining, setTimeRemaining] = useState(10);
+  const [timeRemaining, setTimeRemaining] = useState(120);
   const [localStatus, setLocalStatus] = useState(currentStatus);
   const [localNextStation, setLocalNextStation] = useState(nextStation);
   const [previousRoom, setPreviousRoom] = useState("");
@@ -66,7 +67,15 @@ const ChatRoom = ({
     if (room === 'ped_pong') {
       setVdoChat("/videos/duck.mp4")
     } else {
-      setVdoChat("/videos/EvBus.mp4")
+        if ( roomCapacity === 2) {
+          setVdoChat("/videos/bike.mp4")
+        } else if ( roomCapacity === 4)  {
+          setVdoChat("/videos/car.mp4")
+        } else if ( roomCapacity === 10)  {
+          setVdoChat("/videos/songthaew.mp4")
+        } else if ( roomCapacity === 15)  {
+          setVdoChat("/videos/EvBus.mp4")
+        }
     }
   }, [room] )
 
