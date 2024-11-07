@@ -1,0 +1,19 @@
+.iconType {
+    @apply flex items-center gap-2 py-1 px-2 w-full
+}
+
+.iconSize {
+    @apply w-10 h-10 text-gray-600
+}
+
+.inBtn {
+    @apply flex flex-col items-center w-full
+}
+
+.typeTextInBtn {
+    @apply text-base text-gray-600
+}
+
+.personInBtn {
+    @apply text-sm text-gray-600
+}
