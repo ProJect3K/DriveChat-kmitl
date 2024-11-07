@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ROOM_TYPES } from '../lib/constants';
 import TransportButtons from './TransportButtons';
 import TypeUser from './TypeUser';
+import Image from 'next/image';
 
 export default function JoinChat({
   username,
@@ -126,6 +127,8 @@ export default function JoinChat({
   };
 
   return (
+    <>
+      {/* user */}
     <div className="flex flex-col items-center max-w-2xl mx-auto">
       <h2 className="text-2xl font-semibold mb-6">DriveChat@kmitl</h2>
       
@@ -227,5 +230,6 @@ export default function JoinChat({
         </div>
       )}
     </div>
+    </>
   );
 }

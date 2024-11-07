@@ -2,6 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'MyCustomFont'; /* You can choose any name for the font */
+  src: url('/fonts/MyFont.ttf') format('truetype'); /* Use the .ttf file */
+  font-weight: normal;
+  font-style: normal;
+  font-size: large;
+}
+
+* {
+  font-family: 'MyCustomFont', sans-serif; /* Apply globally */
+}
+
+
 @layer components {
   .input-base {
     @apply w-full px-4 py-2 border rounded-lg transition-all duration-200;
