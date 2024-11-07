@@ -63,7 +63,7 @@
 
 ## RUN
 
-  - เข้า folder demo-drch
+  - เข้า folder drch
 
   ``` bash
   cd drch
