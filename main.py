@@ -46,6 +46,17 @@ class ConnectionManager:
         }
         
     async def connect(self, websocket: WebSocket, room: str, username: str):
+        """
+        Connect a WebSocket to a specific room.
+        
+        Args:
+            websocket (WebSocket): The WebSocket connection to be connected.
+            room (str): The name of the room to connect to.
+            username (str): The username of the connecting user.
+        
+        Raises:
+            HTTPException: If the room does not exist or the room is full.
+        """
         if room not in self.available_rooms:
             raise HTTPException(status_code=400, detail="Room does not exist")
             
@@ -67,6 +78,13 @@ class ConnectionManager:
         self.active_users[room].append(username)
 
     async def disconnect(self, websocket: WebSocket, room: str):
+        """
+        Disconnect a WebSocket from a specific room.
+        
+        Args:
+            websocket (WebSocket): The WebSocket connection to be disconnected.
+            room (str): The name of the room to disconnect from.
+        """
         if room in self.active_connections:
             if websocket in self.active_connections[room]:
                 index = self.active_connections[room].index(websocket)
@@ -87,6 +105,12 @@ class ConnectionManager:
                     del self.available_rooms[room]
 
     async def move_users_to_ped_pong(self, room: str):
+        """
+        Move all users from a given room to the ped pong room.
+        
+        Args:
+            room (str): The name of the room to move users from.
+        """
         if room in ["ped_pong", "duck_pond"] or not self.active_connections.get(room):
             return
 
@@ -123,6 +147,16 @@ class ConnectionManager:
                 print(f"Error moving user {username}: {e}")
 
     async def move_back_to_original_room(self, username: str, websocket: WebSocket):
+        """
+        Move a user back to their original room.
+        
+        Args:
+            username (str): The username of the user to move.
+            websocket (WebSocket): The WebSocket connection of the user to move.
+        
+        Returns:
+            bool: True if the user was successfully moved, False otherwise.
+        """
         if username not in self.original_rooms:
             return False
             
@@ -169,6 +203,12 @@ class ConnectionManager:
             return False
 
     async def start_room_transition_timer(self, room: str):
+        """
+        Start a timer to transition a room to the ped pong room.
+        
+        Args:
+            room (str): The name of the room to transition.
+        """
         if room in ["duck_pond", "ped_pong"] or self.available_rooms[room].get("is_special"):
             return
 
@@ -189,6 +229,15 @@ class ConnectionManager:
             await self.move_users_to_ped_pong(room)  # Attempt to move users even if there's an error
 
     def get_time_remaining(self, room: str) -> Optional[int]:
+        """
+        Get the time remaining before a room transitions.
+        
+        Args:
+            room (str): The name of the room to check.
+        
+        Returns:
+            Optional[int]: The number of seconds remaining before the room transitions, or None if the room does not have a transition timer.
+        """
         if room not in self.available_rooms or room in ["duck_pond", "ped_pong"]:
             return None
             
@@ -200,12 +249,40 @@ class ConnectionManager:
         return max(0, remaining)
 
     def get_room_count(self, room: str) -> int:
+        """
+        Get the number of users in a room.
+        
+        Args:
+            room (str): The name of the room to check.
+        
+        Returns:
+            int: The number of users in the room.
+        """
         return len(self.active_users.get(room, []))
 
     def get_room_capacity(self, room: str) -> int:
+        """
+        Get the capacity of a room.
+        
+        Args:
+            room (str): The name of the room to check.
+        
+        Returns:
+            int: The capacity of the room.
+        """
         return self.available_rooms.get(room, {}).get("capacity", 0)
 
     def get_random_active_room(self, transport_type: str, user_type: str) -> dict:
+        """
+        Get a random available room that matches the specified transport type and user type.
+        
+        Args:
+            transport_type (str): The transport type to filter rooms by.
+            user_type (str): The user type to filter rooms by.
+        
+        Returns:
+            dict: A dictionary containing information about the selected room, or None if no suitable room is available.
+        """
         if user_type != "passenger":  # Only passengers can use random join
             return None
             
@@ -225,12 +302,26 @@ class ConnectionManager:
         return random.choice(available_rooms) if available_rooms else None
 
     async def broadcast(self, message: str, room: str, exclude: WebSocket = None):
+        """
+        Broadcast a message to all connected WebSockets in a room, except for the excluded WebSocket.
+        
+        Args:
+            message (str): The message to broadcast.
+            room (str): The name of the room to broadcast the message in.
+            exclude (WebSocket, optional): The WebSocket connection to exclude from the broadcast.
+        """
         if room in self.active_connections:
             for connection in self.active_connections[room]:
                 if connection != exclude:
                     await connection.send_text(message)
 
     async def broadcast_user_list(self, room: str):
+        """
+        Broadcast the list of active users in a room to all connected WebSockets.
+        
+        Args:
+            room (str): The name of the room to broadcast the user list in.
+        """
         if room in self.active_users:
             user_list = self.active_users[room]
             capacity = self.available_rooms[room]["capacity"]
@@ -247,6 +338,18 @@ manager = ConnectionManager()
 
 @app.post("/rooms")
 async def create_room(room: RoomCreate):
+    """
+    Create a new room with the specified parameters.
+    
+    Args:
+        room (RoomCreate): A pydantic model containing the room information.
+    
+    Raises:
+        HTTPException: If the room already exists or the creator is not a driver.
+    
+    Returns:
+        dict: A dictionary containing the status and details of the created room.
+    """
     if room.room_name in manager.available_rooms:
         raise HTTPException(status_code=400, detail="Room already exists")
     
@@ -273,6 +376,16 @@ async def create_room(room: RoomCreate):
 
 @app.get("/rooms/random")
 async def get_random_room(transport_type: str, user_type: str):
+    """
+    Get a random available room that matches the specified transport type and user type.
+    
+    Args:
+        transport_type (str): The transport type to filter rooms by.
+        user_type (str): The user type to filter rooms by.
+    
+    Returns:
+        dict: A dictionary containing information about the selected room, or a message indicating that no suitable room is available.
+    """
     room = manager.get_random_active_room(transport_type, user_type)
     if room:
         return room
@@ -280,6 +393,12 @@ async def get_random_room(transport_type: str, user_type: str):
 
 @app.get("/rooms/debug")
 async def debug_rooms():
+    """
+    Get a dictionary of information about all available rooms.
+    
+    Returns:
+        dict: A dictionary containing information about each available room.
+    """
     return {
         "rooms": {
             room_name: {
@@ -287,7 +406,7 @@ async def debug_rooms():
                 "current_users": manager.get_room_count(room_name),
                 "time_remaining": manager.get_time_remaining(room_name),
                 "is_special": room_info.get("is_special", False),
-                "transport_type": room_info.get("transport_type")  # Include transport type in debug info
+                "transport_type": room_info.get("transport_type")  # Include transport
             }
             for room_name, room_info in manager.available_rooms.items()
         }
@@ -295,6 +414,14 @@ async def debug_rooms():
 
 @app.websocket("/ws/{room_id}/{username}")
 async def websocket_endpoint(websocket: WebSocket, room_id: str, username: str):
+    """
+    Handle the WebSocket connection for a user joining a room.
+    
+    Args:
+        websocket (WebSocket): The WebSocket connection for the user.
+        room_id (str): The ID of the room the user is joining.
+        username (str): The username of the user joining the room.
+    """
     try:
         await manager.connect(websocket, room_id, username)
         await manager.broadcast(f"System: {username} has joined the chat", room_id)
