@@ -139,9 +139,9 @@ export default function JoinChat({
           placeholder="Enter your username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-semibold"
         />
-        <div className="w-1/3">
+        <div className="w-2/5">
           <TypeUser
             userType={userType}
             onSelectUserType={handleUserTypeSelect}
@@ -182,7 +182,7 @@ export default function JoinChat({
                 setRoomDisplayName("");
               }} 
               disabled={isLoading}
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-red-500 hover:text-white transition-colors"
             >
               Cancel
             </button>

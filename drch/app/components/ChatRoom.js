@@ -139,8 +139,8 @@ const ChatRoom = ({
                   )}
                   <div className={`rounded-lg p-3 max-w-[80%] break-words
                     ${isSystemMessage 
-                      ? 'bg-gray-100 text-gray-600 text-center w-full text-xs' 
-                      : 'bg-blue-100'}`}
+                      ? 'bg-gray-100 text-gray-00 text-center w-full text-xs' 
+                      : 'bg-blue-300'}`}
                   >
                     {content}
                   </div>
@@ -164,7 +164,6 @@ const ChatRoom = ({
                 className="px-6 py-2 bg-amber-400 text-black rounded-lg hover:bg-amber-500 transition-colors"
               >
                 send
-                 {/* 😊 */}
               </button>
             </div>
           </div>

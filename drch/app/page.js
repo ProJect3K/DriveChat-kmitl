@@ -95,6 +95,7 @@ export default function Home() {
               setRoomCapacity={setRoomCapacity}
               joinChat={joinChat}
             />
+
             ) : (
               <ChatRoom
               room={room}
@@ -109,6 +110,23 @@ export default function Home() {
               nextStation="ped pong"
               currentStatus="Driving"
             />
+          )}
+        </div>
+
+        <div className="">
+          {!isJoined ? (
+            <div className='max-w-screen-md mx-auto flex justify-center items-center my-6'>
+              <Image
+                src="/images/busstop.png"
+                width={50}
+                height={50}
+                layout="responsive"
+                alt="Bus Stop" // Always good to add alt text for accessibility
+              />
+            </div>
+          
+          ) : (
+            <div></div>
           )}
         </div>
       </div>
