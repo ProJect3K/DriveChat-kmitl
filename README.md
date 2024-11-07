@@ -66,7 +66,7 @@
   - เข้า folder demo-drch
 
   ``` bash
-  cd demo-drch
+  cd drch
   ```
 
   - run server & website
