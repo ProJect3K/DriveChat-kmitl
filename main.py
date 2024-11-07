@@ -20,6 +20,7 @@ class RoomCreate(BaseModel):
     room_name: str
     capacity: int
     creator_type: str
+    transport_type: str  # Added transport type field
 
 class ConnectionManager:
     def __init__(self):
@@ -34,12 +35,14 @@ class ConnectionManager:
         self.available_rooms["duck_pond"] = {
             "capacity": 15,
             "next_transition": None,
-            "is_special": True
+            "is_special": True,
+            "transport_type": None
         }
         self.available_rooms["ped_pong"] = {
             "capacity": 15,
             "next_transition": None,
-            "is_special": True
+            "is_special": True,
+            "transport_type": None
         }
         
     async def connect(self, websocket: WebSocket, room: str, username: str):
@@ -208,7 +211,9 @@ class ConnectionManager:
             
         available_rooms = []
         for room_name, room_info in self.available_rooms.items():
-            if room_name not in ["duck_pond", "ped_pong"] and transport_type in room_name:
+            # Check transport_type in room_info instead of room name
+            if (room_name not in ["duck_pond", "ped_pong"] and 
+                room_info.get("transport_type") == transport_type):
                 current_users = self.get_room_count(room_name)
                 if current_users < room_info["capacity"]:
                     available_rooms.append({
@@ -251,7 +256,8 @@ async def create_room(room: RoomCreate):
     manager.available_rooms[room.room_name] = {
         "capacity": room.capacity,
         "next_transition": None,
-        "is_special": False
+        "is_special": False,
+        "transport_type": room.transport_type  # Store the transport type
     }
     
     # Start the transition timer for the new room
@@ -280,7 +286,8 @@ async def debug_rooms():
                 "capacity": room_info["capacity"],
                 "current_users": manager.get_room_count(room_name),
                 "time_remaining": manager.get_time_remaining(room_name),
-                "is_special": room_info.get("is_special", False)
+                "is_special": room_info.get("is_special", False),
+                "transport_type": room_info.get("transport_type")  # Include transport type in debug info
             }
             for room_name, room_info in manager.available_rooms.items()
         }
