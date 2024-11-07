@@ -118,7 +118,7 @@ export default function TransportButtons({
                 <Bus className="iconSize"/>
                 <div className='inBtn'>
                   <div className="typeTextInBtn">EV / Minibus</div>
-                  <div className='personInBtn'>1-15 person</div>
+                  <div className='personInBtn'>2-15 person</div>
                 </div>
               </div>
             </button>
