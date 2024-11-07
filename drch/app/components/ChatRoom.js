@@ -13,10 +13,11 @@ const ChatRoom = ({
   nextStation = "ped pong",
   currentStatus = "Driving",
 }) => {
-  const [timeRemaining, setTimeRemaining] = useState(120);
+  const [timeRemaining, setTimeRemaining] = useState(10);
   const [localStatus, setLocalStatus] = useState(currentStatus);
   const [localNextStation, setLocalNextStation] = useState(nextStation);
   const [previousRoom, setPreviousRoom] = useState("");
+  const [vdoChat, setVdoChat] = useState("");
 
   const getAlignmentClass = (isSystemMessage, username, sender) => {
     if (isSystemMessage) {
@@ -61,6 +62,14 @@ const ChatRoom = ({
     }
   }, [room, previousRoom]);
 
+  useEffect(() => {
+    if (room === 'ped_pong') {
+      setVdoChat("/videos/duck.mp4")
+    } else {
+      setVdoChat("/videos/EvBus.mp4")
+    }
+  }, [room] )
+
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
@@ -102,7 +111,7 @@ const ChatRoom = ({
 
         {/* video */}
         <div className="w-1/2 bg-white rounded-lg shadow-lg p-4 flex-grow-0 basis-2/3">
-          <video src="/videos/duck.mp4" autoPlay loop className='h-full w-full'/>
+          <video src={vdoChat} autoPlay loop className='h-full w-full'/>
         </div>
         
         {/* Chat */}
@@ -140,7 +149,7 @@ const ChatRoom = ({
                   <div className={`rounded-lg p-3 max-w-[80%] break-words
                     ${isSystemMessage 
                       ? 'bg-gray-100 text-gray-00 text-center w-full text-xs' 
-                      : 'bg-blue-300'}`}
+                      : 'bg-blue-300 font-semibold'}`}
                   >
                     {content}
                   </div>
