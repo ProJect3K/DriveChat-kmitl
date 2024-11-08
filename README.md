@@ -5,6 +5,10 @@
   1. python 3.13.0 https://www.python.org/downloads/release/python-3130 แล้วเลือก Windows installer (64-bit)
   2. node.js 20.18.0 https://nodejs.org/en/download/prebuilt-installer แล้วเลือก v20.18.0(LTS), Windows, x64
 
+  # Link Website
+
+  https://drivechat.it22.dev/
+
 # LOCALHOST
 
 ## CLONE GIT
