@@ -21,6 +21,7 @@ DriveChat@KMITL - Backend Server
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+import os
 import random
 import asyncio
 from typing import Optional
@@ -30,11 +31,31 @@ from datetime import datetime, timedelta
 # Create FastAPI application instance
 app = FastAPI()
 
+DEFAULT_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
+
+def get_allowed_origins() -> list[str]:
+    raw_origins = os.getenv("ALLOWED_ORIGINS", "")
+    origins = [
+        origin.strip()
+        for origin in raw_origins.split(",")
+        if origin.strip()
+    ]
+    if ENVIRONMENT == "production" and "*" in origins:
+        raise RuntimeError("ALLOWED_ORIGINS cannot include '*' in production")
+    return origins or DEFAULT_ALLOWED_ORIGINS
+
+
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development").strip().lower()
+
 # ตั้งค่า CORS Middleware เพื่ออนุญาตการเชื่อมต่อจาก Frontend
 # Configure CORS Middleware to allow connections from Frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],           # อนุญาตทุก origin (Allow all origins)
+    allow_origins=get_allowed_origins(),
     allow_credentials=True,        # อนุญาต credentials
     allow_methods=["*"],           # อนุญาตทุก HTTP methods
     allow_headers=["*"],           # อนุญาตทุก headers
@@ -621,6 +642,9 @@ async def debug_rooms():
     Returns:
         dict: ข้อมูลทุกห้องในระบบ
     """
+    if ENVIRONMENT != "development":
+        raise HTTPException(status_code=404, detail="Not found")
+
     return {
         "rooms": {
             room_name: {

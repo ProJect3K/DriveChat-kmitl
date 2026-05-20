@@ -21,9 +21,9 @@
 
 import { useState } from 'react';
 import { ROOM_TYPES } from '../lib/constants';
+import { buildApiUrl } from '../lib/config';
 import TransportButtons from './TransportButtons';
 import TypeUser from './TypeUser';
-import Image from 'next/image';
 
 // ==============================================================================
 // COMPONENT DEFINITION (นิยาม Component)
@@ -147,7 +147,11 @@ export default function JoinChat({
     try {
       // เรียก API หาห้องสุ่ม
       // Call API to find random room
-      const response = await fetch(`http://127.0.0.1:8000/rooms/random?transport_type=${selectedType}&user_type=${userType}`);
+      const params = new URLSearchParams({
+        transport_type: selectedType,
+        user_type: userType,
+      });
+      const response = await fetch(buildApiUrl(`/rooms/random?${params.toString()}`));
       const data = await response.json();
 
       if (data.room) {
@@ -198,7 +202,7 @@ export default function JoinChat({
 
       // เรียก API สร้างห้อง
       // Call API to create room
-      const response = await fetch('http://127.0.0.1:8000/rooms', {
+      const response = await fetch(buildApiUrl('/rooms'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

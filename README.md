@@ -87,3 +87,54 @@
   | VARAPORN  | SUKMUANG        | 67070159 |
   | WARITSARA | SENACHAIBAN     | 67070160 |
   | ATHIKARN  | CHINJIRATTIKAN  | 67070194 |
+
+# DEPLOYMENT NOTES
+
+This repository has a Next.js frontend in `drch/` and a FastAPI backend in `main.py`.
+
+## Local environment examples
+
+Frontend variables live in `drch/.env.local` and are documented in `drch/.env.example`:
+
+```bash
+NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000
+NEXT_PUBLIC_WS_BASE_URL=ws://127.0.0.1:8000
+```
+
+Backend variables can be set in the shell or hosting dashboard and are documented in root `.env.example`:
+
+```bash
+ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+ENVIRONMENT=development
+```
+
+## Vercel frontend
+
+- Root Directory: `drch`
+- Framework Preset: Next.js
+- Install Command: default `npm install`
+- Build Command: `npm run build`
+- Output Directory: default
+- Required Vercel environment variables:
+  - `NEXT_PUBLIC_API_BASE_URL=https://<backend-host>`
+  - `NEXT_PUBLIC_WS_BASE_URL=wss://<backend-host>`
+
+## Backend hosting
+
+The current backend uses FastAPI WebSockets, so it should run on a long-running ASGI host instead of Vercel Functions.
+
+Recommended default backend deployment:
+
+```bash
+pip install -r requirements.txt
+uvicorn main:app --host 0.0.0.0 --port $PORT
+```
+
+Set backend production variables on that host:
+
+```bash
+ALLOWED_ORIGINS=https://<vercel-project>.vercel.app,https://<custom-domain>
+ENVIRONMENT=production
+```
+
+Do not use `ALLOWED_ORIGINS=*` in production; `main.py` rejects wildcard CORS when `ENVIRONMENT=production`.

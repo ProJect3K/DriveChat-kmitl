@@ -31,6 +31,21 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 ## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Deploy this frontend from repository root directory `drch`, not from the repository root.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+Recommended Vercel settings:
+
+- Root Directory: `drch`
+- Framework Preset: Next.js
+- Install Command: default `npm install`
+- Build Command: `npm run build`
+- Output Directory: default
+
+Set these Vercel environment variables:
+
+```bash
+NEXT_PUBLIC_API_BASE_URL=https://<backend-host>
+NEXT_PUBLIC_WS_BASE_URL=wss://<backend-host>
+```
+
+The FastAPI backend in `../main.py` uses WebSockets and should be deployed to a long-running ASGI host, not as a Vercel Function.

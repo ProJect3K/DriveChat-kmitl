@@ -19,9 +19,10 @@
 // 1. IMPORTS (การนำเข้า)
 // ==============================================================================
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import ChatRoom from 'app/components/ChatRoom';
 import JoinChat from 'app/components/JoinChat';
+import { buildWsUrl } from 'app/lib/config';
 import Image from 'next/image';
 
 // ==============================================================================
@@ -88,7 +89,9 @@ export default function Home() {
     if (username && roomToJoin) {
       // สร้าง WebSocket connection
       // Create WebSocket connection
-      socket.current = new WebSocket(`ws://127.0.0.1:8000/ws/${roomToJoin}/${username}`);
+      const encodedRoom = encodeURIComponent(roomToJoin);
+      const encodedUsername = encodeURIComponent(username);
+      socket.current = new WebSocket(buildWsUrl(`/ws/${encodedRoom}/${encodedUsername}`));
 
       // ---------- Handle incoming messages ----------
       // จัดการข้อความที่เข้ามา
