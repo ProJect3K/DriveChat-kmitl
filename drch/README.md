@@ -49,3 +49,5 @@ NEXT_PUBLIC_WS_BASE_URL=wss://<backend-host>
 ```
 
 The FastAPI backend in `../main.py` uses WebSockets and should be deployed to a long-running ASGI host, not as a Vercel Function.
+
+Troubleshooting: if the public Vercel URL shows `{"detail":"Not Found"}`, the project was deployed from the repository root. Set Vercel Root Directory to `drch` and redeploy.

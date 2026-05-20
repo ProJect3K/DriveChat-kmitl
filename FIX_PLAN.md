@@ -20,6 +20,8 @@ Phase 1 has been implemented in this working tree:
 - `main.py` reads `ALLOWED_ORIGINS` for CORS, falls back to local frontend origins, and rejects wildcard CORS when `ENVIRONMENT=production`.
 - `/rooms/debug` returns 404 unless `ENVIRONMENT=development`.
 - README/AGENT/DESIGN/REVIEW deployment notes were updated.
+- Root `vercel.json` now fails accidental repository-root deployments with a clear Root Directory instruction.
+- `drch/vercel.json` declares the intended Next.js frontend build settings.
 
 Remaining deployment work is external configuration: set Vercel env values, deploy the FastAPI WebSocket backend to a long-running ASGI host, set backend `ALLOWED_ORIGINS`, and set `ENVIRONMENT=production`.
 
@@ -393,7 +395,7 @@ Choose: Option B, Vercel frontend + external backend.
 
 | Setting | Recommended Value | Evidence | Notes |
 |---|---|---|---|
-| Root Directory | `drch` | Next `package.json` lives in `drch`; root has no `package.json` | Required. |
+| Root Directory | `drch` | Next `package.json` and `drch/vercel.json` live in `drch`; root `vercel.json` fails wrong-root deployments | Required. |
 | Install Command | Default `npm install` | `drch/package-lock.json` exists | Do not install from repo root. |
 | Build Command | `npm run build` | `drch/package.json` build exists and passed locally via `npm.cmd run build` | Build warning only: outdated browserslist data. |
 | Output Directory | Default for Next.js | `next.config.mjs` has no custom output | Do not override. |

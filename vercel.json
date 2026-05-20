@@ -1,0 +1,4 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "node -e \"throw new Error('Wrong Vercel root: set Project Settings > Root Directory to drch, then redeploy. The repo root contains the FastAPI backend and will show {\\\"detail\\\":\\\"Not Found\\\"} at /.')\""
+}

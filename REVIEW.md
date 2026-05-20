@@ -226,7 +226,7 @@ The current code now uses environment variables. These variables must be configu
 | Debug endpoint production-safe | Pass pending backend env | `debug_rooms` returns 404 unless `ENVIRONMENT=development` | Set `ENVIRONMENT=production`. |
 | Build verified locally | Pass | `npm.cmd run build` from `drch` passed locally during fix planning/implementation | Re-run before deployment. |
 | Lint verified locally | Unknown | `npm run lint` exists; ESLint config not found in inspected files | Run lint or remove/fix script if it is not supported. |
-| `vercel.json` present | Not required for simple frontend; missing for custom setup | No `vercel.json` found | Optional for frontend-only; needed if configuring routes/builds/services explicitly. |
+| `vercel.json` present | Pass | Root `vercel.json` fails incorrect root deployments; `drch/vercel.json` declares the frontend as Next.js | Vercel dashboard Root Directory must still be `drch`. |
 | Root directory documented | Pass | README and `drch/README.md` document Vercel Root Directory `drch` | Keep in sync with Vercel project settings. |
 
 ## Production-Ready Improvement Plan

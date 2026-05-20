@@ -119,6 +119,8 @@ ENVIRONMENT=development
   - `NEXT_PUBLIC_API_BASE_URL=https://<backend-host>`
   - `NEXT_PUBLIC_WS_BASE_URL=wss://<backend-host>`
 
+If the deployed URL shows `{"detail":"Not Found"}`, Vercel is serving the FastAPI backend from the repository root instead of the Next.js frontend. Fix it in Vercel Project Settings by setting Root Directory to `drch`, then redeploy. The root `vercel.json` intentionally fails future root deployments with this instruction.
+
 ## Backend hosting
 
 The current backend uses FastAPI WebSockets, so it should run on a long-running ASGI host instead of Vercel Functions.
